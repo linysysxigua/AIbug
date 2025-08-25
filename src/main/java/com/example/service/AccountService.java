@@ -63,8 +63,14 @@ public class AccountService {
     }
     
     public String getPrimaryEmail(User user) {
-        // BUG: Removed null and empty checks - will cause NPE or IndexOutOfBounds
-        return user.getEmails().get(0).getAddress();
+        // FIX: Added proper null and empty checks to prevent exceptions
+        if (user.getEmails() != null && !user.getEmails().isEmpty()) {
+            Email firstEmail = user.getEmails().get(0);
+            if (firstEmail != null) {
+                return firstEmail.getAddress();
+            }
+        }
+        return "no-email@example.com";
     }
     
     public List<Account> findDuplicateAccounts(List<Account> accounts) {
