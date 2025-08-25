@@ -89,9 +89,9 @@ public class PaymentService {
         int endIndex = Math.min(n, transactions.size());
         List<Transaction> result = transactions.subList(0, endIndex);
         
-        // Attempt to access element at endIndex position - off-by-one error
+        // Fixed: access element at endIndex - 1 position to avoid off-by-one error
         if (endIndex > 0) {
-            Transaction lastTransaction = transactions.get(endIndex);
+            Transaction lastTransaction = transactions.get(endIndex - 1);
             System.out.println("Last transaction ID: " + lastTransaction.getId());
         }
         
