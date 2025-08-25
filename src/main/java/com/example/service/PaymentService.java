@@ -168,6 +168,32 @@ public class PaymentService {
         return results;
     }
     
+    // BUG: Vulnerable JSON building with string concatenation
+    public String buildUserReportJson(String userName, String userComment) {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"timestamp\":\"").append(System.currentTimeMillis()).append("\",");
+        // BUG: Direct concatenation without escaping - JSON injection vulnerability
+        json.append("\"userName\":\"").append(userName).append("\",");
+        json.append("\"comment\":\"").append(userComment).append("\",");
+        json.append("\"status\":\"active\"");
+        json.append("}");
+        
+        return json.toString();
+    }
+    
+    // BUG: Another vulnerable method building SQL-like filter strings
+    public String buildTransactionFilter(String userId, String category, String note) {
+        // BUG: Building filter expressions with direct concatenation
+        String filter = "user_id='" + userId + "' AND category='" + category + "'";
+        
+        if (note != null && !note.isEmpty()) {
+            filter += " AND notes LIKE '%" + note + "%'";
+        }
+        
+        return filter;
+    }
+    
     private List<User> executeUserQuery(String query) throws SQLException {
         return new ArrayList<>();
     }
