@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache {
     
-    private static Map<String, Object> globalCache = new HashMap<>();
+    private static Map<String, Object> globalCache = new ConcurrentHashMap<>();
     private static volatile Cache instance;
     private Map<String, Object> instanceCache;
     
@@ -15,7 +15,7 @@ public class Cache {
     }
     
     public static void putGlobal(String key, Object value) {
-        // BUG: Non-thread-safe HashMap operations without synchronization
+        // FIX: Now using thread-safe ConcurrentHashMap
         globalCache.put(key, value);
     }
     
@@ -27,12 +27,12 @@ public class Cache {
         globalCache.clear();
     }
     
-    // BUG: This method has race condition - not thread-safe
+    // FIX: Thread-safe increment using ConcurrentHashMap atomic operations
     public static void incrementCounter(String key) {
-        Object value = globalCache.get(key);
-        int count = (value instanceof Integer) ? (Integer) value : 0;
-        // Race condition: between get and put, another thread might modify the value
-        globalCache.put(key, count + 1);
+        globalCache.compute(key, (k, v) -> {
+            int count = (v instanceof Integer) ? (Integer) v : 0;
+            return count + 1;
+        });
     }
     
     public static Cache getInstance() {
