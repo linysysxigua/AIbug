@@ -157,11 +157,25 @@ public class PaymentService {
         List<Transaction> results = new ArrayList<>();
         List<Transaction> allTransactions = getAllTransactions();
         
+        // BUG: Performance issue - compiling regex pattern inside nested loops
         for (Transaction t : allTransactions) {
             for (String userEmail : getUserEmails(t.getId())) {
-                if (EMAIL_PATTERN.matcher(userEmail).matches() && userEmail.equals(email)) {
-                    results.add(t);
-                    break;
+                // BUG: Pattern.compile() called repeatedly - very expensive operation
+                Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+                
+                // BUG: Additional expensive regex operations in loop
+                Pattern domainValidation = Pattern.compile("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+                
+                if (emailPattern.matcher(userEmail).matches() && userEmail.equals(email)) {
+                    // BUG: Another regex compilation for each match
+                    Pattern complexValidation = Pattern.compile(
+                        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+                    );
+                    
+                    if (complexValidation.matcher(userEmail).matches()) {
+                        results.add(t);
+                        break;
+                    }
                 }
             }
         }
