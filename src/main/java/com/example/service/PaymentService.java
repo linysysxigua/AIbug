@@ -103,28 +103,25 @@ public class PaymentService {
     }
     
     public void exportTransactions(List<Transaction> transactions, OutputStream outputStream) throws IOException {
-        FileInputStream templateStream = new FileInputStream("template.csv");
-        
-        // BUG: Resource leak - FileInputStream not closed if exception occurs
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = templateStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
-        
-        for (Transaction t : transactions) {
-            String line = String.format("%s,%s,%.2f,%d%n", 
-                t.getId(), t.getType(), t.getAmount(), t.getTimestamp());
-            outputStream.write(line.getBytes());
-            
-            // Simulate potential exception that could prevent resource cleanup
-            if (t.getAmount() < 0) {
-                throw new IOException("Invalid transaction amount: " + t.getAmount());
+        // FIX: Use try-with-resources to ensure FileInputStream is always closed
+        try (FileInputStream templateStream = new FileInputStream("template.csv")) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = templateStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
             }
-        }
-        
-        // This close() may not be reached if exception occurs above
-        templateStream.close();
+            
+            for (Transaction t : transactions) {
+                String line = String.format("%s,%s,%.2f,%d%n", 
+                    t.getId(), t.getType(), t.getAmount(), t.getTimestamp());
+                outputStream.write(line.getBytes());
+                
+                // Exception handling now safe - resource will be closed automatically
+                if (t.getAmount() < 0) {
+                    throw new IOException("Invalid transaction amount: " + t.getAmount());
+                }
+            }
+        } // FileInputStream automatically closed here, even if exception occurs
     }
     
     public List<User> findUsersByName(String name) throws SQLException {
