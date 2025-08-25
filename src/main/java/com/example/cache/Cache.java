@@ -35,17 +35,19 @@ public class Cache {
         });
     }
     
-    // BUG: Broken double-checked locking - race condition in singleton pattern
+    // FIX: Proper double-checked locking pattern for thread-safe singleton
     public static Cache getInstance() {
         if (instance == null) {
             synchronized (Cache.class) {
-                // Missing second null check - can create multiple instances
-                instance = new Cache();
-                // Simulate some initialization work that makes race condition more likely
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                // Second null check to prevent multiple instance creation
+                if (instance == null) {
+                    instance = new Cache();
+                    // Simulate some initialization work
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
