@@ -90,24 +90,25 @@ public class AccountService {
     
     public String readTemplate(String templatePath) throws IOException {
         StringBuilder content = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new FileReader(templatePath));
         
-        String line;
-        while ((line = reader.readLine()) != null) {
-            content.append(line).append("\n");
-            
-            // BUG: Resource leak - if exception occurs here, BufferedReader never closed
-            if (line.contains("ERROR")) {
-                throw new IOException("Template contains error marker: " + line);
+        // FIX: Use try-with-resources to ensure BufferedReader is always closed
+        try (BufferedReader reader = new BufferedReader(new FileReader(templatePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+                
+                // Exception handling now safe - resource will be closed automatically
+                if (line.contains("ERROR")) {
+                    throw new IOException("Template contains error marker: " + line);
+                }
+                
+                // Another exception path that is now safe
+                if (content.length() > 10000) {
+                    throw new IOException("Template file too large: " + content.length());
+                }
             }
-            
-            // Another potential exception path that prevents resource cleanup
-            if (content.length() > 10000) {
-                throw new IOException("Template file too large: " + content.length());
-            }
-        }
+        } // BufferedReader and FileReader automatically closed here
         
-        reader.close(); // This line may not be reached if exceptions occur above
         return content.toString();
     }
     
