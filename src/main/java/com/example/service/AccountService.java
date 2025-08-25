@@ -95,8 +95,19 @@ public class AccountService {
         String line;
         while ((line = reader.readLine()) != null) {
             content.append(line).append("\n");
+            
+            // BUG: Resource leak - if exception occurs here, BufferedReader never closed
+            if (line.contains("ERROR")) {
+                throw new IOException("Template contains error marker: " + line);
+            }
+            
+            // Another potential exception path that prevents resource cleanup
+            if (content.length() > 10000) {
+                throw new IOException("Template file too large: " + content.length());
+            }
         }
-        reader.close();
+        
+        reader.close(); // This line may not be reached if exceptions occur above
         return content.toString();
     }
     
