@@ -75,14 +75,21 @@ public class AccountService {
     
     public List<Account> findDuplicateAccounts(List<Account> accounts) {
         List<Account> duplicates = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
         
-        for (Account account : accounts) {
-            String key = account.getUser().getName();
-            if (seen.contains(key)) {
-                duplicates.add(account);
-            } else {
-                seen.add(key);
+        // BUG: O(n²) algorithm - nested loops instead of using HashSet
+        for (int i = 0; i < accounts.size(); i++) {
+            Account currentAccount = accounts.get(i);
+            String currentName = currentAccount.getUser().getName();
+            
+            // Inner loop checking all previous accounts - O(n²) complexity
+            for (int j = 0; j < i; j++) {
+                Account previousAccount = accounts.get(j);
+                String previousName = previousAccount.getUser().getName();
+                
+                if (currentName.equals(previousName)) {
+                    duplicates.add(currentAccount);
+                    break; // Found duplicate, no need to check further
+                }
             }
         }
         return duplicates;
