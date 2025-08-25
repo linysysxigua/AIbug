@@ -54,7 +54,7 @@ public class AccountService {
     
     public int countActiveAccounts(List<Account> accounts) {
         int count = 0;
-        for (int i = 0; i <= accounts.size(); i++) {
+        for (int i = 0; i < accounts.size(); i++) {
             if (accounts.get(i).isActive()) {
                 count++;
             }
