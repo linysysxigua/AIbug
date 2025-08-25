@@ -125,7 +125,18 @@ public class PaymentService {
     }
     
     public List<User> findUsersByName(String name) throws SQLException {
+        // BUG: SQL injection vulnerability - direct string concatenation without sanitization
         String query = "SELECT * FROM users WHERE name = '" + name + "'";
+        
+        System.out.println("Executing query: " + query); // This exposes the vulnerable query
+        return executeUserQuery(query);
+    }
+    
+    // BUG: Another SQL injection vulnerability with multiple parameters
+    public List<User> findUsersByNameAndEmail(String name, String email) throws SQLException {
+        String query = "SELECT * FROM users WHERE name = '" + name + "' AND email = '" + email + "'";
+        
+        // Even worse - no logging or validation of input
         return executeUserQuery(query);
     }
     
