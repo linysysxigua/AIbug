@@ -74,10 +74,12 @@ public class PaymentService {
     
     public Receipt processPayment(Payment payment) {
         String note = "No note";
-        // BUG: Removed null check for getMetadata() - will cause NullPointerException
-        note = payment.getMetadata().get("note");
-        if (note == null) {
-            note = "No note";
+        // FIX: Added null check for getMetadata() to prevent NullPointerException
+        if (payment.getMetadata() != null) {
+            String noteValue = payment.getMetadata().get("note");
+            if (noteValue != null) {
+                note = noteValue;
+            }
         }
         
         return new Receipt(payment.getId(), payment.getAmount(), note);
