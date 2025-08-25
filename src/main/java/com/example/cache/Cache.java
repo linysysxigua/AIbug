@@ -15,6 +15,7 @@ public class Cache {
     }
     
     public static void putGlobal(String key, Object value) {
+        // BUG: Non-thread-safe HashMap operations without synchronization
         globalCache.put(key, value);
     }
     
@@ -24,6 +25,14 @@ public class Cache {
     
     public static void clearGlobal() {
         globalCache.clear();
+    }
+    
+    // BUG: This method has race condition - not thread-safe
+    public static void incrementCounter(String key) {
+        Object value = globalCache.get(key);
+        int count = (value instanceof Integer) ? (Integer) value : 0;
+        // Race condition: between get and put, another thread might modify the value
+        globalCache.put(key, count + 1);
     }
     
     public static Cache getInstance() {
