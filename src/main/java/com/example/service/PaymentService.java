@@ -16,6 +16,10 @@ import java.io.IOException;
 public class PaymentService {
     
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+    private static final Pattern DOMAIN_VALIDATION_PATTERN = Pattern.compile("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    private static final Pattern COMPLEX_EMAIL_PATTERN = Pattern.compile(
+        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    );
     
     public static class Payment {
         private String id;
@@ -157,22 +161,13 @@ public class PaymentService {
         List<Transaction> results = new ArrayList<>();
         List<Transaction> allTransactions = getAllTransactions();
         
-        // BUG: Performance issue - compiling regex pattern inside nested loops
+        // FIX: Use pre-compiled static patterns for optimal performance
         for (Transaction t : allTransactions) {
             for (String userEmail : getUserEmails(t.getId())) {
-                // BUG: Pattern.compile() called repeatedly - very expensive operation
-                Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-                
-                // BUG: Additional expensive regex operations in loop
-                Pattern domainValidation = Pattern.compile("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
-                
-                if (emailPattern.matcher(userEmail).matches() && userEmail.equals(email)) {
-                    // BUG: Another regex compilation for each match
-                    Pattern complexValidation = Pattern.compile(
-                        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-                    );
-                    
-                    if (complexValidation.matcher(userEmail).matches()) {
+                // FIX: Use pre-compiled patterns instead of compiling in loop
+                if (EMAIL_PATTERN.matcher(userEmail).matches() && userEmail.equals(email)) {
+                    // FIX: Additional validation using pre-compiled pattern
+                    if (COMPLEX_EMAIL_PATTERN.matcher(userEmail).matches()) {
                         results.add(t);
                         break;
                     }
