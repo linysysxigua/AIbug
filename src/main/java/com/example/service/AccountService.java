@@ -63,10 +63,8 @@ public class AccountService {
     }
     
     public String getPrimaryEmail(User user) {
-        if (user.getEmails() != null && !user.getEmails().isEmpty()) {
-            return user.getEmails().get(0).getAddress();
-        }
-        return "no-email@example.com";
+        // BUG: Removed null and empty checks - will cause NPE or IndexOutOfBounds
+        return user.getEmails().get(0).getAddress();
     }
     
     public List<Account> findDuplicateAccounts(List<Account> accounts) {
