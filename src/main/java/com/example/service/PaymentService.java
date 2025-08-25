@@ -87,7 +87,15 @@ public class PaymentService {
         }
         
         int endIndex = Math.min(n, transactions.size());
-        return transactions.subList(0, endIndex);
+        List<Transaction> result = transactions.subList(0, endIndex);
+        
+        // Attempt to access element at endIndex position - off-by-one error
+        if (endIndex > 0) {
+            Transaction lastTransaction = transactions.get(endIndex);
+            System.out.println("Last transaction ID: " + lastTransaction.getId());
+        }
+        
+        return result;
     }
     
     public void exportTransactions(List<Transaction> transactions, OutputStream outputStream) throws IOException {
