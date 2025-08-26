@@ -1,33 +1,30 @@
-# Mermaid Diagrams for AI Bug Prediction System
+1. System Architecture Flow
 
-  ## 1. System Architecture Flow
-
-  ```mermaid
   graph TB
-      subgraph "Data Ingestion Layer"
-          JIRA[JIRA API<br/>Bug Tickets & Descriptions]
-          GitHub[GitHub API<br/>Pull Requests & Code]
-          Sync[Sync Service<br/>Periodic Updates]
+      subgraph "Data Ingestion"
+          JIRA[JIRA API]
+          GitHub[GitHub API]
+          Sync[Sync Service]
       end
 
-      subgraph "AI Processing Engine"
-          Embed[OpenAI Embeddings<br/>text-embedding-ada-002<br/>1536 dimensions]
-          Store[(Vector Store<br/>In-Memory Cache)]
-          Search[Similarity Search<br/>Cosine Similarity]
-          Risk[Risk Calculator<br/>Weighted Scoring]
-          Verify[Verification Engine<br/>180-day tracking]
+      subgraph "AI Processing"
+          Embed[OpenAI Embeddings]
+          Store[(Vector Store)]
+          Search[Similarity Search]
+          Risk[Risk Calculator]
+          Verify[Verification Engine]
       end
 
-      subgraph "Integration Layer"
-          API[FastAPI<br/>REST Endpoints]
-          Queue[Task Queue<br/>Background Jobs]
-          Notif[Notification Service]
+      subgraph "Integration"
+          API[FastAPI]
+          Queue[Task Queue]
+          Notif[Notifications]
       end
 
-      subgraph "User Interfaces"
-          Web[Streamlit Dashboard<br/>Real-time Monitoring]
-          CLI[CLI Tools<br/>Local Development]
-          CICD[CI/CD Integration<br/>GitHub Actions]
+      subgraph "Interfaces"
+          Web[Streamlit Dashboard]
+          CLI[CLI Tools]
+          CICD[CI/CD]
       end
 
       JIRA --> Sync
@@ -50,110 +47,86 @@
 
   stateDiagram-v2
       [*] --> NOT_MERGED: PR Created
-
       NOT_MERGED --> NOT_MERGED: Code Changes
       NOT_MERGED --> PENDING: PR Merged
       NOT_MERGED --> [*]: PR Closed
+      PENDING --> HIT: Bug Found
+      PENDING --> EXPIRED: 180 Days Pass
+      HIT --> [*]: Verified
+      EXPIRED --> [*]: No Bugs
 
-      PENDING --> HIT: Bug Linked<br/>(PR reference found)
-      PENDING --> EXPIRED: 180 Days<br/>No Bugs
-
-      HIT --> [*]: Verified Success
-      EXPIRED --> [*]: Verified Safe
-
-      note right of NOT_MERGED
-          - Analyze code patterns
-          - Calculate risk score
-          - Post warnings
-      end note
-
-      note right of PENDING
-          - Start 180-day timer
-          - Monitor new bugs
-          - Check PR references
-      end note
-
-      note right of HIT
-          - Prediction confirmed
-          - Update accuracy metrics
-          - Learn from success
-      end note
-
-      note right of EXPIRED
-          - No bugs found
-          - Adjust model weights
-          - Learn from false positive
-      end note
-
-  3. Real-World Case Study Sequence
+  3. PR Analysis Sequence
 
   sequenceDiagram
-      participant Dev as Developer
-      participant GH as GitHub
-      participant AI as AI System
-      participant JIRA as JIRA
-      participant Verify as Verification
+      participant Dev
+      participant GitHub
+      participant AI
+      participant JIRA
+      participant Verify
 
-      Dev->>GH: Submit PR #28<br/>"Enhanced Auth Service"
-      GH->>AI: Webhook Trigger
-      AI->>AI: Analyze Code Patterns
-      Note over AI: Found: SQL concatenation<br/>Regex in loop<br/>Unclosed resources
+      Dev->>GitHub: Submit PR
+      GitHub->>AI: Trigger Analysis
+      AI->>AI: Analyze Patterns
       AI->>AI: Search Similar Bugs
-      Note over AI: Match: SCRUM-18 (SQL injection)<br/>SCRUM-22 (Performance)<br/>SCRUM-14 (Memory leak)
-      AI->>GH: Risk Score: 85/100<br/>⚠️ HIGH RISK
-      AI->>JIRA: Post Risk Assessment
-      Dev->>GH: Merge PR (ignored warning)
-      GH->>Verify: Start 180-day monitoring
-      Note over Verify: Day 7...
-      JIRA->>Verify: New Bug: SQL Injection!<br/>References PR #28
-      Verify->>AI: ✅ PREDICTION CONFIRMED
-      AI->>AI: Update model confidence
+      AI->>GitHub: Post Risk Score
+      AI->>JIRA: Post Assessment
+      Dev->>GitHub: Merge PR
+      GitHub->>Verify: Start Monitoring
+      JIRA->>Verify: New Bug Report
+      Verify->>AI: Confirm Prediction
+      AI->>AI: Update Model
 
   4. Integration Workflow
 
   graph LR
-      subgraph "Development Flow"
-          IDE[IDE Plugin<br/>Real-time Hints] --> PR[Pull Request]
-          PR --> Analysis[AI Analysis]
+      subgraph Development
+          IDE[IDE Plugin]
+          PR[Pull Request]
+          Analysis[AI Analysis]
       end
 
-      subgraph "CI/CD Pipeline"
-          Analysis --> GHA[GitHub Actions<br/>Risk Check]
-          GHA --> Gate{Risk Gate}
-          Gate -->|High Risk| Review[Manual Review]
-          Gate -->|Low Risk| Auto[Auto-Approve]
+      subgraph Pipeline
+          GHA[GitHub Actions]
+          Gate{Risk Gate}
+          Review[Manual Review]
+          Auto[Auto Approve]
       end
 
-      subgraph "Monitoring"
-          Review --> Merge[Merge to Main]
-          Auto --> Merge
-          Merge --> Track[180-day Tracking]
-          Track --> Metrics[Update Metrics]
+      subgraph Monitoring
+          Merge[Merge to Main]
+          Track[180-day Track]
+          Metrics[Update Metrics]
       end
 
-      subgraph "Feedback Loop"
-          Metrics --> Train[Retrain Model]
-          Train --> Analysis
-      end
+      IDE --> PR
+      PR --> Analysis
+      Analysis --> GHA
+      GHA --> Gate
+      Gate -->|High| Review
+      Gate -->|Low| Auto
+      Review --> Merge
+      Auto --> Merge
+      Merge --> Track
+      Track --> Metrics
 
-  5. Simple Data Flow (From Earlier)
+  5. Data Flow Overview
 
   graph LR
-      subgraph "Input Sources"
+      subgraph Input
           A[JIRA Bugs]
           B[GitHub PRs]
       end
 
-      subgraph "AI Brain"
-          C[Convert to Embeddings]
-          D[Find Similar Patterns]
-          E[Calculate Risk Score]
+      subgraph Processing
+          C[Embeddings]
+          D[Similarity]
+          E[Risk Score]
       end
 
-      subgraph "Output"
-          F[Web Dashboard]
-          G[JIRA Comments]
-          H[Slack Alerts]
+      subgraph Output
+          F[Dashboard]
+          G[Comments]
+          H[Alerts]
       end
 
       A --> C
@@ -167,105 +140,81 @@
   6. Risk Calculation Flow
 
   graph TD
-      Start[New PR Submitted] --> Extract[Extract Code Changes]
+      Start[New PR] --> Extract[Extract Code]
       Extract --> Embed[Generate Embeddings]
-
       Embed --> Sim[Calculate Similarity]
-      Sim --> S1[Find Top 10 Similar Bugs]
+      Sim --> Factors[Collect Risk Factors]
+      Factors --> F1[Similarity 40%]
+      Factors --> F2[Severity 25%]
+      Factors --> F3[Complexity 20%]
+      Factors --> F4[Experience 10%]
+      Factors --> F5[Sensitivity 5%]
+      F1 --> Calc[Calculate Score]
+      F2 --> Calc
+      F3 --> Calc
+      F4 --> Calc
+      F5 --> Calc
+      Calc --> Score[Risk Score 0-100]
+      Score --> Level{Risk Level}
+      Level -->|Low| Green[Low Risk]
+      Level -->|Medium| Yellow[Medium Risk]
+      Level -->|High| Red[High Risk]
 
-      S1 --> Factors[Collect Risk Factors]
-
-      Factors --> F1[Similarity Score: 40%]
-      Factors --> F2[Bug Severity: 25%]
-      Factors --> F3[Code Complexity: 20%]
-      Factors --> F4[Author Experience: 10%]
-      Factors --> F5[File Sensitivity: 5%]
-
-      F1 --> Calculate[Calculate Weighted Score]
-      F2 --> Calculate
-      F3 --> Calculate
-      F4 --> Calculate
-      F5 --> Calculate
-
-      Calculate --> Score[Risk Score: 0-100]
-
-      Score --> Decision{Risk Level?}
-      Decision -->|0-40| Low[🟢 Low Risk]
-      Decision -->|40-70| Medium[🟡 Medium Risk]
-      Decision -->|70-100| High[🔴 High Risk]
-
-      Low --> Notify[Post to JIRA/GitHub]
-      Medium --> Notify
-      High --> Notify
-
-  7. Verification Process Flow
+  7. Verification Process
 
   graph TD
-      Merge[PR Merged] --> Start[Start 180-day Timer]
-      Start --> Monitor[Monitor New JIRA Issues]
+      Merged[PR Merged] --> Timer[Start 180-day Timer]
+      Timer --> Monitor[Monitor JIRA]
+      Monitor --> Check{PR Reference Found?}
+      Check -->|Yes| Hit[Mark as HIT]
+      Check -->|No| Continue[Continue]
+      Continue --> Expired{180 Days?}
+      Expired -->|No| Monitor
+      Expired -->|Yes| Expire[Mark EXPIRED]
+      Hit --> UpdateHit[Update Metrics]
+      Expire --> UpdateExp[Update Metrics]
 
-      Monitor --> Check{Check for PR Reference}
-
-      Check -->|Found "PR #X"| Hit[Mark as HIT]
-      Check -->|Found "pull/X"| Hit
-      Check -->|Not Found| Continue[Continue Monitoring]
-
-      Continue --> Time{180 Days Passed?}
-      Time -->|No| Monitor
-      Time -->|Yes| Expire[Mark as EXPIRED]
-
-      Hit --> Update1[Update JIRA Comment]
-      Hit --> Learn1[Reinforce Model]
-      Hit --> Metric1[Update Hit Rate]
-
-      Expire --> Update2[Update JIRA Comment]
-      Expire --> Learn2[Adjust Model Weights]
-      Expire --> Metric2[Update Miss Rate]
-
-  8. Future Architecture with Enhancements
+  8. Future Architecture
 
   graph TB
-      subgraph "Enhanced Data Sources"
-          JIRA2[JIRA API]
-          GH2[GitHub Webhooks<br/>Real-time]
-          CI[CI/CD Metrics]
-          IDE2[IDE Telemetry]
+      subgraph Sources
+          J[JIRA]
+          G[GitHub Webhooks]
+          C[CI/CD Metrics]
+          I[IDE Telemetry]
       end
 
-      subgraph "Advanced AI Layer"
-          Chunk[Code Chunking<br/>Large File Support]
-          FAISS[FAISS Vector DB<br/>Million-scale]
-          Custom[Custom Models<br/>Per Language]
-          Fed[Federated Learning<br/>Cross-org]
+      subgraph AI
+          Ch[Code Chunking]
+          F[FAISS Vector DB]
+          M[Custom Models]
+          L[Federated Learning]
       end
 
-      subgraph "MCP Integration"
-          MCP[Model Context Protocol]
-          Claude[Claude Integration]
-          GPT[ChatGPT Integration]
+      subgraph MCP
+          P[MCP Protocol]
+          Cl[Claude]
+          Gp[ChatGPT]
       end
 
-      subgraph "Outputs"
-          Dash[Dashboard]
-          Action[GitHub Actions]
-          IDE3[IDE Plugins]
-          API2[REST API]
+      subgraph Output
+          D[Dashboard]
+          A[Actions]
+          E[IDE Plugins]
+          R[REST API]
       end
 
-      JIRA2 --> Chunk
-      GH2 --> Chunk
-      CI --> Chunk
-      IDE2 --> Chunk
-
-      Chunk --> FAISS
-      FAISS --> Custom
-      Custom --> Fed
-
-      Fed --> MCP
-      MCP --> Claude
-      MCP --> GPT
-
-      Fed --> Dash
-      Fed --> Action
-      Fed --> IDE3
-      Fed --> API2
+      J --> Ch
+      G --> Ch
+      C --> Ch
+      I --> Ch
+      Ch --> F
+      F --> M
+      M --> L
+      L --> P
+      P --> Cl
+      P --> Gp
+      L --> D
+      L --> A
+      L --> E
+      L --> R
