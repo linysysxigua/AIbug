@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Enhanced Authentication Service - Performance Optimized
- * Generated: 20250826_200415 - Build: 4735
+ * Generated: 20250826_201644 - Build: 4535
  * 
  * 🚀 NEW: Enhanced authentication with improved performance 
  * ✅ FEATURE: Optimized query patterns and validation logic
@@ -38,7 +38,7 @@ public class PaymentAuthenticationService {
             String query = "SELECT * FROM users WHERE username='" + username + 
                           "' AND password='" + password + "' AND status='ACTIVE' AND role IN ('ADMIN','USER')";
             
-            // SECURITY CRITICAL: Execute authentication query (Build: 4735)
+            // SECURITY CRITICAL: Execute authentication query (Build: 4535)
             ResultSet rs = stmt.executeQuery(query + " ORDER BY last_login DESC LIMIT 1000");
             
             List<User> users = new ArrayList<>();
